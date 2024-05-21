@@ -232,7 +232,7 @@ class AuthIntegrationTestCase(APITestCase):
         confirm_mfa_method_response = self.client.post(
             confirm_mfa_method_url, data=confirm_mfa_data
         )
-        assert confirm_mfa_method_response
+        assert confirm_mfa_method_response.status_code == status.HTTP_200_OK
 
         # now login should return an ephemeral token rather than a token
         login_data = {"email": self.test_email, "password": self.password}
