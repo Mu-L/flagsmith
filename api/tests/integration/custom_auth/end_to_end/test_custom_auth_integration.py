@@ -233,6 +233,7 @@ class AuthIntegrationTestCase(APITestCase):
             confirm_mfa_method_url, data=confirm_mfa_data
         )
         assert confirm_mfa_method_response.status_code == status.HTTP_200_OK
+        backup_codes = confirm_mfa_method_response.json()["backup_codes"]
 
         # now login should return an ephemeral token rather than a token
         login_data = {"email": self.test_email, "password": self.password}
@@ -245,6 +246,21 @@ class AuthIntegrationTestCase(APITestCase):
         # now we can confirm the login
         confirm_login_data = {"ephemeral_token": ephemeral_token, "code": totp.now()}
         login_confirm_url = reverse("api-v1:custom_auth:mfa-authtoken-login-code")
+        login_confirm_response = self.client.post(
+            login_confirm_url, data=confirm_login_data
+        )
+        assert login_confirm_response.status_code == status.HTTP_200_OK
+        key = login_confirm_response.json()["key"]
+
+        # Login with backup code should also work
+        self.client.logout()
+        login_response = self.client.post(login_url, data=login_data)
+        assert login_response.status_code == status.HTTP_200_OK
+        ephemeral_token = login_response.json()["ephemeral_token"]
+        confirm_login_data = {
+            "ephemeral_token": ephemeral_token,
+            "code": backup_codes[0],
+        }
         login_confirm_response = self.client.post(
             login_confirm_url, data=confirm_login_data
         )
