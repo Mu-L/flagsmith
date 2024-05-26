@@ -2,8 +2,14 @@ import logging
 
 from core.models import SoftDeleteExportableModel
 from django.db import models
-from django_lifecycle import BEFORE_DELETE, LifecycleModelMixin, hook
+from django_lifecycle import (
+    AFTER_CREATE,
+    BEFORE_DELETE,
+    LifecycleModelMixin,
+    hook,
+)
 
+from integrations.github.constants import GitHubTag
 from organisations.models import Organisation
 
 logger: logging.Logger = logging.getLogger(name=__name__)
@@ -75,3 +81,17 @@ class GithubRepository(LifecycleModelMixin, SoftDeleteExportableModel):
                 FeatureExternalResource.ResourceType.GITHUB_PR,
             ],
         ).delete()
+
+    @hook(AFTER_CREATE)
+    def create_github_tags(
+        self,
+    ) -> None:
+        from projects.tags.models import Tag, TagType
+
+        for tag_label in GitHubTag:
+            Tag.objects.get_or_create(
+                label=tag_label.value,
+                project=self.project,
+                is_system_tag=True,
+                type=TagType.GITHUB.value,
+            )

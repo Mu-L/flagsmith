@@ -7,6 +7,7 @@ from projects.models import Project
 class TagType(models.Choices):
     NONE = "NONE"
     STALE = "STALE"
+    GITHUB = "GITHUB"
 
 
 class Tag(AbstractBaseExportableModel):
@@ -33,6 +34,7 @@ class Tag(AbstractBaseExportableModel):
     )
 
     class Meta:
+        unique_together = ("project", "type", "label")
         ordering = ("id",)  # explicit ordering to prevent pagination warnings
 
     def __str__(self):

@@ -1,3 +1,5 @@
+from enum import Enum
+
 GITHUB_API_URL = "https://api.github.com/"
 GITHUB_API_VERSION = "2022-11-28"
 
@@ -15,3 +17,14 @@ DELETED_SEGMENT_OVERRIDE_TEXT = (
 )
 FEATURE_ENVIRONMENT_URL = "%s/project/%s/environment/%s/features?feature=%s&tab=%s"
 GITHUB_API_CALLS_TIMEOUT = 10
+
+GITHUB_TAG_COLOR = "#f6f8fa"
+
+
+class GitHubTag(Enum):
+    PR_OPEN = "PR Open"
+    PR_MERGED = "PR Merged"
+    PR_CLOSED = "PR Closed"
+    PR_DRAFT = "PR Draft"
+    ISSUE_OPEN = "Issue Open"
+    ISSUE_CLOSED = "Issue Closed"
