@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.117.0](https://github.com/Flagsmith/flagsmith/compare/v2.116.3...v2.117.0) (2024-05-27)
+
+
+### Features
+
+* Add api usage metrics for different periods ([#3870](https://github.com/Flagsmith/flagsmith/issues/3870)) ([50cc369](https://github.com/Flagsmith/flagsmith/commit/50cc369d26d7ec5c418faadcd1079c1e027a6f0e))
+* Add endpoint to fetch GitHub repository contributors ([#4013](https://github.com/Flagsmith/flagsmith/issues/4013)) ([6f321d4](https://github.com/Flagsmith/flagsmith/commit/6f321d45898d2c9b7159388df6b850dd873ee68d))
+* Implement be search and lazy loading for GitHub resources ([#3987](https://github.com/Flagsmith/flagsmith/issues/3987)) ([c896c50](https://github.com/Flagsmith/flagsmith/commit/c896c507a6ead8075b3c77d3aa834c057c0cc909))
+* Improvements in the GitHub integration BE ([#3962](https://github.com/Flagsmith/flagsmith/issues/3962)) ([59ddfba](https://github.com/Flagsmith/flagsmith/commit/59ddfba70103d021dab1e6ad5726d21f7c3802eb))
+
+
+### Bug Fixes
+
+* Add support for versioning v2 on GitHub resource linking ([#4015](https://github.com/Flagsmith/flagsmith/issues/4015)) ([edb4a75](https://github.com/Flagsmith/flagsmith/commit/edb4a7591bfb11cedb01a63a3fe23d2d4f2c63c8))
+
 ## [2.116.3](https://github.com/Flagsmith/flagsmith/compare/v2.116.2...v2.116.3) (2024-05-22)
 
 
