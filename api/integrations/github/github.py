@@ -89,7 +89,7 @@ def tag_feature_per_github_event(
 
 
 def handle_github_webhook_event(event_type: str, payload: dict[str, Any]) -> None:
-    if event_type == "installation.deleted":
+    if event_type == "installation" and payload.get("action") == "deleted":
         handle_installation_deleted(payload)
     elif event_type in tag_by_event_type:
         action = str(payload.get("action"))

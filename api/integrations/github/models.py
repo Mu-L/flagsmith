@@ -37,6 +37,7 @@ class GithubConfiguration(SoftDeleteExportableModel):
                 condition=models.Q(deleted_at__isnull=True),
             )
         ]
+        ordering = ("id",)
 
 
 class GithubRepository(LifecycleModelMixin, SoftDeleteExportableModel):
@@ -66,6 +67,7 @@ class GithubRepository(LifecycleModelMixin, SoftDeleteExportableModel):
                 condition=models.Q(deleted_at__isnull=True),
             )
         ]
+        ordering = ("id",)
 
     @hook(BEFORE_DELETE)
     def delete_feature_external_resources(

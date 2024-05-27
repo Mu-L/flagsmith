@@ -272,15 +272,15 @@ def test_cannot_create_feature_external_resource_when_the_type_is_incorrect(
 def test_cannot_create_feature_external_resource_due_to_unique_constraint(
     admin_client_new: APIClient,
     feature: Feature,
-    feature_external_resource: FeatureExternalResource,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
 ) -> None:
     # Given
     feature_external_resource_data = {
         "type": "GITHUB_ISSUE",
-        "url": "https://github.com/userexample/example-project-repo/issues/11",
+        "url": "https://github.com/repositoryownertest/repositorynametest/issues/11",
         "feature": feature.id,
     }
     url = reverse(
@@ -300,18 +300,14 @@ def test_cannot_create_feature_external_resource_due_to_unique_constraint(
 
 def test_delete_feature_external_resource(
     admin_client_new: APIClient,
-    feature_external_resource: FeatureExternalResource,
     feature: Feature,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
-    mocker,
+    feature_external_resource: FeatureExternalResource,
+    mocker: MockerFixture,
 ) -> None:
     # Given
-    mock_generate_token = mocker.patch(
-        "integrations.github.client.generate_token",
-    )
-    mock_generate_token.return_value = "mocked_token"
     github_request_mock = mocker.patch(
         "requests.post", side_effect=mocked_requests_post
     )
@@ -325,7 +321,7 @@ def test_delete_feature_external_resource(
 
     # Then
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={
             "body": "### The feature flag `Test Feature1` was unlinked from the issue/PR"
         },
@@ -345,11 +341,11 @@ def test_delete_feature_external_resource(
 @responses.activate
 def test_get_feature_external_resources(
     admin_client_new: APIClient,
-    feature_external_resource: FeatureExternalResource,
     feature: Feature,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
     mocker: MockerFixture,
 ) -> None:
     # Given
@@ -363,7 +359,7 @@ def test_get_feature_external_resources(
 
     responses.add(
         method="GET",
-        url=f"{GITHUB_API_URL}repos/userexample/example-project-repo/issues/11",
+        url=f"{GITHUB_API_URL}repos/repositoryownertest/repositorynametest/issues/11",
         status=200,
         json={"title": "resource name", "state": "open"},
     )
@@ -377,11 +373,11 @@ def test_get_feature_external_resources(
 
 def test_get_feature_external_resource(
     admin_client_new: APIClient,
-    feature_external_resource: FeatureExternalResource,
     feature: Feature,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
 ) -> None:
     # Given
     url = reverse(
@@ -403,23 +399,20 @@ def test_create_github_comment_on_feature_state_updated(
     staff_user: FFAdminUser,
     staff_client: APIClient,
     with_environment_permissions: WithEnvironmentPermissionsCallable,
-    feature_external_resource: FeatureExternalResource,
     feature: Feature,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
     mocker: MockerFixture,
     environment: Environment,
+    feature_external_resource: FeatureExternalResource,
 ) -> None:
     # Given
     with_environment_permissions([UPDATE_FEATURE_STATE], environment.id, False)
     feature_state = FeatureState.objects.get(
         feature=feature, environment=environment.id
     )
-    mock_generate_token = mocker.patch(
-        "integrations.github.client.generate_token",
-    )
-    mock_generate_token.return_value = "mocked_token"
+
     github_request_mock = mocker.patch(
         "requests.post", side_effect=mocked_requests_post
     )
@@ -455,7 +448,7 @@ def test_create_github_comment_on_feature_state_updated(
     assert response.status_code == status.HTTP_200_OK
 
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={"body": expected_body_comment},
         headers={
             "Accept": "application/vnd.github.v3+json",
@@ -469,11 +462,11 @@ def test_create_github_comment_on_feature_state_updated(
 def test_create_github_comment_on_feature_was_deleted(
     admin_client: APIClient,
     with_environment_permissions: WithEnvironmentPermissionsCallable,
-    feature_external_resource: FeatureExternalResource,
     feature: Feature,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
     mocker: MockerFixture,
 ) -> None:
     # Given
@@ -498,7 +491,7 @@ def test_create_github_comment_on_feature_was_deleted(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={"body": "### The Feature Flag `Test Feature1` was deleted"},
         headers={
             "Accept": "application/vnd.github.v3+json",
@@ -512,13 +505,13 @@ def test_create_github_comment_on_feature_was_deleted(
 def test_create_github_comment_on_segment_override_updated(
     feature_with_value: Feature,
     segment_override_for_feature_with_value: FeatureState,
-    feature_with_value_external_resource: FeatureExternalResource,
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
     mocker: MockerFixture,
     environment: Environment,
     admin_client: APIClient,
+    feature_with_value_external_resource: FeatureExternalResource,
 ) -> None:
     # Given
     feature_state = segment_override_for_feature_with_value
@@ -564,7 +557,7 @@ def test_create_github_comment_on_segment_override_updated(
     assert response.status_code == status.HTTP_200_OK
 
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={"body": expected_comment_body},
         headers={
             "Accept": "application/vnd.github.v3+json",
@@ -578,11 +571,11 @@ def test_create_github_comment_on_segment_override_updated(
 def test_create_github_comment_on_segment_override_deleted(
     segment_override_for_feature_with_value: FeatureState,
     feature_with_value_segment: FeatureSegment,
-    feature_with_value_external_resource: FeatureExternalResource,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
     mocker: MockerFixture,
     admin_client_new: APIClient,
+    feature_with_value_external_resource: FeatureExternalResource,
 ) -> None:
     # Given
     mock_generate_token = mocker.patch(
@@ -606,7 +599,7 @@ def test_create_github_comment_on_segment_override_deleted(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={
             "body": "### The Segment Override `segment` for Feature Flag `feature_with_value` was deleted"
         },
@@ -621,7 +614,6 @@ def test_create_github_comment_on_segment_override_deleted(
 
 def test_create_github_comment_using_v2(
     admin_client_new: APIClient,
-    feature_external_resource: FeatureExternalResource,
     environment_v2_versioning: Environment,
     segment: Segment,
     feature: Feature,
@@ -629,15 +621,10 @@ def test_create_github_comment_using_v2(
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
     mocker: MockerFixture,
 ) -> None:
-
     # Given
-    mock_generate_token = mocker.patch(
-        "integrations.github.client.generate_token",
-    )
-    mock_generate_token.return_value = "mocked_token"
-
     github_request_mock = mocker.patch(
         "requests.post", side_effect=mocked_requests_post
     )
@@ -688,7 +675,7 @@ def test_create_github_comment_using_v2(
     )
 
     github_request_mock.assert_called_with(
-        "https://api.github.com/repos/userexample/example-project-repo/issues/11/comments",
+        "https://api.github.com/repos/repositoryownertest/repositorynametest/issues/11/comments",
         json={"body": expected_comment_body},
         headers={
             "Accept": "application/vnd.github.v3+json",
@@ -703,7 +690,6 @@ def test_create_github_comment_using_v2(
 
 def test_create_github_comment_using_v2_fails_on_wrong_params(
     admin_client_new: APIClient,
-    feature_external_resource: FeatureExternalResource,
     environment_v2_versioning: Environment,
     segment: Segment,
     feature: Feature,
@@ -711,15 +697,11 @@ def test_create_github_comment_using_v2_fails_on_wrong_params(
     project: Project,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
     mocker: MockerFixture,
 ) -> None:
 
     # Given
-    mock_generate_token = mocker.patch(
-        "integrations.github.client.generate_token",
-    )
-    mock_generate_token.return_value = "mocked_token"
-
     github_request_mock = mocker.patch(
         "requests.post", side_effect=mocked_requests_post
     )

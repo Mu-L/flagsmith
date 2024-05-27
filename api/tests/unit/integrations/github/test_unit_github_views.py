@@ -300,9 +300,9 @@ def test_cannot_create_github_repository_due_to_unique_constraint(
 def test_github_delete_repository(
     admin_client_new: APIClient,
     organisation: Organisation,
-    feature_external_resource: FeatureExternalResource,
     github_configuration: GithubConfiguration,
     github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
     mocker: MockerFixture,
 ) -> None:
     # Given
@@ -316,6 +316,8 @@ def test_github_delete_repository(
     )
     for feature in github_repository.project.features.all():
         assert FeatureExternalResource.objects.filter(feature=feature).exists()
+
+    print(feature_external_resource)
     # When
     response = admin_client_new.delete(url)
     # Then
@@ -349,6 +351,9 @@ def mocked_requests_get_issues_and_pull_requests(*args, **kwargs):
                 "id": 1,
                 "title": "Title 1",
                 "number": 101,
+                "state": "Open",
+                "merged": False,
+                "draft": True,
             },
         ],
         "total_count": 1,
