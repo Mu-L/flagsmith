@@ -68,7 +68,11 @@ def tag_feature_per_github_event(
     ).first()
 
     if feature:
-        if metadata.get("merged"):
+        if (
+            event_type == "pull_request"
+            and action == "closed"
+            and metadata.get("merged")
+        ):
             action = "merged"
         # Get corresponding project Tag to tag the feature
         github_tag = Tag.objects.get(

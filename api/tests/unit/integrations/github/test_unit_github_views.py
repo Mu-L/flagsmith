@@ -32,13 +32,14 @@ WEBHOOK_PAYLOAD_MERGED = json.dumps(
         "pull_request": {
             "id": 1234567,
             "html_url": "https://github.com/repositoryownertest/repositorynametest/issues/11",
+            "merged": True,
         },
-        "action": "merged",
+        "action": "closed",
     }
 )
 
 WEBHOOK_SIGNATURE = "sha1=57a1426e19cdab55dd6d0c191743e2958e50ccaa"
-WEBHOOK_MERGED_ACTION_SIGNATURE = "sha1=a0600dfd191416ef6f63c6683241b7b2b2f0cfbb"
+WEBHOOK_MERGED_ACTION_SIGNATURE = "sha1=712ec7a5db14aad99d900da40738ebb9508ecad2"
 WEBHOOK_SIGNATURE_WITHOUT_INSTALLATION_ID = (
     "sha1=081eef49d04df27552587d5df1c6b76e0fe20d21"
 )
