@@ -70,16 +70,22 @@ def tag_feature_per_github_event(
     if feature:
         if metadata.get("merged"):
             action = "merged"
-        # Tag feature with PR Open
+        # Get corresponding project Tag to tag the feature
         github_tag = Tag.objects.get(
             label=tag_by_event_type[event_type][action],
             project=feature.project_id,
             is_system_tag=True,
             type=TagType.GITHUB.value,
         )
-        # Add tag to feature if not already tagged
-        if not feature.tags.filter(pk=github_tag.pk).exists():
-            feature.tags.add(github_tag)
+        tag_label_pattern = "Issue" if event_type == "issues" else "PR"
+        # Remove all GITHUB tags from the feature which label starts with issue or pr depending on event_type
+        feature.tags.remove(
+            *feature.tags.filter(
+                Q(type=TagType.GITHUB.value) & Q(label__startswith=tag_label_pattern)
+            )
+        )
+
+        feature.tags.add(github_tag)
 
 
 def handle_github_webhook_event(event_type: str, payload: dict[str, Any]) -> None:

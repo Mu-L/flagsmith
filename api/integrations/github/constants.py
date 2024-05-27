@@ -28,3 +28,13 @@ class GitHubTag(Enum):
     PR_DRAFT = "PR Draft"
     ISSUE_OPEN = "Issue Open"
     ISSUE_CLOSED = "Issue Closed"
+
+
+github_tag_description = {
+    GitHubTag.PR_OPEN.value: "This feature has a linked PR open",
+    GitHubTag.PR_MERGED.value: "This feature has a linked PR merged",
+    GitHubTag.PR_CLOSED.value: "This feature has a linked PR closed",
+    GitHubTag.PR_DRAFT.value: "This feature has a linked PR draft",
+    GitHubTag.ISSUE_OPEN.value: "This feature has a linked issue open",
+    GitHubTag.ISSUE_CLOSED.value: "This feature has a linked issue closed",
+}

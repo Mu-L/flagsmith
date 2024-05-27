@@ -9,7 +9,7 @@ from django_lifecycle import (
     hook,
 )
 
-from integrations.github.constants import GitHubTag
+from integrations.github.constants import GITHUB_TAG_COLOR
 from organisations.models import Organisation
 
 logger: logging.Logger = logging.getLogger(name=__name__)
@@ -63,6 +63,7 @@ class GithubRepository(LifecycleModelMixin, SoftDeleteExportableModel):
                     "repository_name",
                 ],
                 name="unique_repository_data",
+                condition=models.Q(deleted_at__isnull=True),
             )
         ]
 
@@ -72,24 +73,33 @@ class GithubRepository(LifecycleModelMixin, SoftDeleteExportableModel):
     ) -> None:
         from features.feature_external_resources.models import (
             FeatureExternalResource,
+            ResourceType,
         )
 
         FeatureExternalResource.objects.filter(
             feature_id__in=self.project.features.values_list("id", flat=True),
             type__in=[
-                FeatureExternalResource.ResourceType.GITHUB_ISSUE,
-                FeatureExternalResource.ResourceType.GITHUB_PR,
+                ResourceType.GITHUB_ISSUE,
+                ResourceType.GITHUB_PR,
             ],
+            # Filter by url containing the repository owner and name
+            url__contains=f"{self.repository_owner}/{self.repository_name}",
         ).delete()
 
     @hook(AFTER_CREATE)
     def create_github_tags(
         self,
     ) -> None:
+        from integrations.github.constants import (
+            GitHubTag,
+            github_tag_description,
+        )
         from projects.tags.models import Tag, TagType
 
         for tag_label in GitHubTag:
-            Tag.objects.get_or_create(
+            tag, created = Tag.objects.get_or_create(
+                color=GITHUB_TAG_COLOR,
+                description=github_tag_description[tag_label.value],
                 label=tag_label.value,
                 project=self.project,
                 is_system_tag=True,
