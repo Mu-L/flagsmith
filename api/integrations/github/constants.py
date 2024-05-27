@@ -18,7 +18,7 @@ DELETED_SEGMENT_OVERRIDE_TEXT = (
 FEATURE_ENVIRONMENT_URL = "%s/project/%s/environment/%s/features?feature=%s&tab=%s"
 GITHUB_API_CALLS_TIMEOUT = 10
 
-GITHUB_TAG_COLOR = "#f6f8fa"
+GITHUB_TAG_COLOR = "#838992"
 
 
 class GitHubTag(Enum):
