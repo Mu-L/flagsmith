@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from features.feature_external_resources.models import FeatureExternalResource
+from features.models import Feature
 from integrations.github.constants import GITHUB_API_URL
 from integrations.github.models import GithubConfiguration, GithubRepository
 from integrations.github.views import (
@@ -23,7 +24,24 @@ from organisations.models import Organisation
 from projects.models import Project
 
 WEBHOOK_PAYLOAD = json.dumps({"installation": {"id": 1234567}, "action": "deleted"})
+WEBHOOK_PAYLOAD_WITHOUT_INSTALLATION_ID = json.dumps(
+    {"installation": {"id": 765432}, "action": "deleted"}
+)
+WEBHOOK_PAYLOAD_MERGED = json.dumps(
+    {
+        "pull_request": {
+            "id": 1234567,
+            "html_url": "https://github.com/repositoryownertest/repositorynametest/issues/11",
+        },
+        "action": "merged",
+    }
+)
+
 WEBHOOK_SIGNATURE = "sha1=57a1426e19cdab55dd6d0c191743e2958e50ccaa"
+WEBHOOK_MERGED_ACTION_SIGNATURE = "sha1=a0600dfd191416ef6f63c6683241b7b2b2f0cfbb"
+WEBHOOK_SIGNATURE_WITHOUT_INSTALLATION_ID = (
+    "sha1=081eef49d04df27552587d5df1c6b76e0fe20d21"
+)
 WEBHOOK_SECRET = "secret-key"
 
 
@@ -644,6 +662,58 @@ def test_github_webhook_delete_installation(
     assert not GithubConfiguration.objects.filter(installation_id=1234567).exists()
 
 
+def test_github_webhook_merged_a_pull_request(
+    feature: Feature,
+    github_configuration: GithubConfiguration,
+    github_repository: GithubRepository,
+    feature_external_resource: FeatureExternalResource,
+) -> None:
+    # Given
+    settings.GITHUB_WEBHOOK_SECRET = WEBHOOK_SECRET
+    url = reverse("api-v1:github-webhook")
+
+    # When
+    client = APIClient()
+    response = client.post(
+        path=url,
+        data=WEBHOOK_PAYLOAD_MERGED,
+        content_type="application/json",
+        HTTP_X_HUB_SIGNATURE=WEBHOOK_MERGED_ACTION_SIGNATURE,
+        HTTP_X_GITHUB_EVENT="pull_request",
+    )
+
+    # Then
+    feature.refresh_from_db()
+    assert response.status_code == status.HTTP_200_OK
+    assert feature.tags.first().label == "PR Merged"
+
+
+def test_github_webhook_with_non_existing_installation(
+    github_configuration: GithubConfiguration,
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    settings.GITHUB_WEBHOOK_SECRET = WEBHOOK_SECRET
+    url = reverse("api-v1:github-webhook")
+    mocker_logger = mocker.patch("integrations.github.github.logger")
+
+    # When
+    client = APIClient()
+    response = client.post(
+        path=url,
+        data=WEBHOOK_PAYLOAD_WITHOUT_INSTALLATION_ID,
+        content_type="application/json",
+        HTTP_X_HUB_SIGNATURE=WEBHOOK_SIGNATURE_WITHOUT_INSTALLATION_ID,
+        HTTP_X_GITHUB_EVENT="installation",
+    )
+
+    # Then
+    mocker_logger.error.assert_called_once_with(
+        "Github Configuration with installation_id 765432 does not exist"
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
 def test_github_webhook_fails_on_signature_header_missing(
     github_configuration: GithubConfiguration,
 ) -> None:
@@ -980,3 +1050,11 @@ def test_send_the_invalid_type_page_or_page_size_param_returns_400(
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     response_json = response.json()
     assert response_json == error_response
+
+
+# def test_handle_installation_deleted_with_non_existing_installation(mocker: MockerFixture):
+#     payload = {"installation": {"id": 456}}
+#     handle_installation_deleted(payload)
+#     mock_logger.error.assert_called_once_with(
+#         "Github Configuration with installation_id 456 does not exist"
+#     )
